@@ -1,0 +1,410 @@
+---
+title: "02-Correlation-analysis"
+author: "Mayuri Kotian"
+date: "2023-03-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Correlation analysis
+
+This is an R Markdown document. The following chunk of code produces the correlation anlysis results using the pearson test of correlation and linear regression between the acoustic indices and avian species richness.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+## Load required libraries
+
+library(ggpubr)
+
+# Set working directory
+setwd("E:/Acoustic_Indices/V2")
+
+# Read data 
+Data <- read.csv("AI-SR-HA-PFCount_0-24kHz_2-11kHz_0-10kHz_1-8kHz.csv", header = TRUE) # Read dataset
+
+#Check factor variables 
+Data$Year<-as.factor(Data$Year) 
+
+# Scatterplots showing correlation between indices and species richness
+# using Pearson correlation and linear regression
+
+# 1. ACI (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "ACI_11k", y = "species_richness",
+                add = "reg.line",               # Add regression line
+                conf.int = TRUE,                # Add confidence interval
+                color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+                fullrange = TRUE,
+                xlab = "ACI (2 - 11 kHz)", ylab = "Avian species richness",
+                size = 4,
+                add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 2. ACI (0-24 kHz) - Species richness 
+ggscatter(corrdata, x = "ACI_24k", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "ACI (0 - 24 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 3. BI (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "BI_11k", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "BI (2 - 11 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 4. BI (0-24 kHz) - Species richness 
+ggscatter(corrdata, x = "BI_24k", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "BI (0 - 24 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 5. ADI - Species richness 
+ggscatter(corrdata, x = "ADI", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "ADI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 6. AEI - Species richness 
+ggscatter(corrdata, x = "AEI", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "AEI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 7. H - Species richness 
+ggscatter(corrdata, x = "H", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "H", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 8. AEI - Species richness 
+ggscatter(corrdata, x = "NDSI", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "NDSI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 9. NP (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "NP_11k", y = "species_richness",
+          add = "reg.line",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "NP (2 - 11 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "pearson",
+           size = 7,
+           cor.coef.name = c("R"))+ # Add correlation coefficient
+  geom_smooth(method="lm", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "pearson", cor.coef.name = c("R"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+```
+
+## Non-linear Correlation analysis
+
+The following chunk of code produces the correlation anlysis results using the spearman rank correlation and non-linear regression between the acoustic indices and avian species richness.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+# Scatterplots showing correlation between indices and species richness
+# using Spearmann rank correlation and non-linear regression
+
+# 1. ACI (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "ACI_11k", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "ACI (2 - 11 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 2. ACI (0-24 kHz) - Species richness 
+ggscatter(corrdata, x = "ACI_24k", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "ACI (0 - 24 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 3. BI (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "BI_11k", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "BI (2 - 11 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 4. BI (0-24 kHz) - Species richness 
+ggscatter(corrdata, x = "BI_24k", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "BI (0 - 24 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 5. ADI - Species richness 
+ggscatter(corrdata, x = "ADI", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "ADI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 6. AEI - Species richness 
+ggscatter(corrdata, x = "AEI", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "AEI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+
+# 7. H - Species richness 
+ggscatter(corrdata, x = "H", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "H", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 8. AEI - Species richness 
+ggscatter(corrdata, x = "NDSI", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "NDSI", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+
+# 9. NP (2-11 kHz) - Species richness 
+ggscatter(corrdata, x = "NP_11k", y = "species_richness",
+          add = "loess",               # Add regression line
+          conf.int = TRUE,                # Add confidence interval
+          color = "Year", palette = c("#EE442F","#63ACBE"), # Color by groups "Year"
+          fullrange = TRUE,
+          xlab = "NP (2 - 11 kHz)", ylab = "Avian species richness",
+          size = 4,
+          add.params = list(size = 1.5))+
+  stat_cor(aes(color = Year), label.x.npc = 0.5, label.y.npc = 1, method = "spearman",
+           size = 7,
+           cor.coef.name = c("rho"))+ # Add correlation coefficient
+  geom_smooth(method="loess", color="black", size = 1.5)+
+  stat_cor(label.x.npc = 0.5, label.y.npc = 0.88, method = "spearman", cor.coef.name = c("rho"),
+           size = 7)+
+  theme(axis.title.y = element_text(vjust = 2),
+        axis.title.x = element_text(vjust = 0),
+        text = element_text(size = 20),
+        legend.text = element_text(size = 20))
+```

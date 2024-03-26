@@ -1,0 +1,242 @@
+---
+title: "03-GLMM"
+author: "Mayuri Kotian and Pooja Choksi"
+date: "2022-03-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preparing the data for Generalized Linear Mixed-Effects model
+
+This is an R Markdown document. The following chunk of code loads and prepares the data for running the GLMM model.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+# Load required libraries
+library(dplyr)
+library(tidyverse)
+library(scales)
+library(MuMIn)
+library(lme4)
+library(glmer)
+library(optimx)
+library(performance)
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+library(ggplot2)
+
+# Set working directory
+setwd("E:/Acoustic_Indices/Revisions_CSP/Code-and-data-for-GitHub")
+
+# Read data
+Data <- read.csv("AI_SR.csv", header = TRUE)
+
+## Adding a time factor variable for each 1-min filename
+Data$File_1min<- as.character(gsub("*\\-[0-9]", "", Data$filename))
+
+## Adding Time of recording as a variable
+Data$Time_Recorded <- as.numeric(sub('.*(\\d{6}).*', '\\1', Data$filename))
+
+## Adding Date of recording as a variable
+Data$Date_Recorded <- as.character(sub('.*(\\d{8}).*', '\\1', Data$filename))
+
+# Check on Year as a factor varaible
+Data$Year <- as.factor(as.character(Data$Year))
+
+
+## Time binning in 30 min bins
+timebreaks <- c(00000,3000,10000,13000,20000,23000,30000,33000,
+                40000,43000,50000,53000,60000,63000,70000,73000,
+                80000,83000,90000,93000,100000,103000,110000,113000,
+                120000,123000,130000,133000,
+                140000,143000,150000,153000,160000,163000,170000,173000,
+                180000,183000,190000,193000,200000,203000,210000,213000,
+                220000,223000,230000,233000,240000,243000)
+
+timetags <- c("0","0.5", "1","1.5","2","2.5","3","3.5","4","4.5","5","5.5","6","6.5","7","7.5","8","8.5",
+              "9","9.5","10","10.5",
+              "11","11.5","12","12.5","13","13.5","14","14.5","15","15.5","16","16.5","17","17.5","18","18.5",
+              "19","19.5","20","20.5",
+              "21","21.5","22","22.5","23","23.5","24")
+# bucketing values into bins
+# bucketing values into bins
+Time_bin <- cut(Data$Time_Recorded, 
+                breaks=timebreaks, 
+                include.lowest=TRUE, 
+                right=FALSE, 
+                labels=timetags)
+
+Data$Time_bin<-Time_bin
+
+#### Adding a density of understory variable
+Data$Understory_density <- "none"   # Restored and Restored_FD
+Data$Understory_density[Data$Site_Type == 'No_Lantana'] <- "low"  # No_Lantana
+Data$Understory_density[Data$Site_Type == 'Unrestored'] <- "high" # Unrestored
+
+Data$Understory_density <- as.factor(Data$Understory_density)
+
+unique(Data$Understory_density)
+
+Data <- Data[complete.cases(Data),] ### Remove rows with NA
+
+
+```
+
+## Check for multicollinearity between predictor variables
+
+The following chunk of code checks for multicollinearity between predictor variables.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+#Check predictor variables for multi-collinearity 
+AI_predictors <- data[,c("ACI_11k",
+                         "ADI",
+                         "AEI","BI_11k",
+                          "H", "NDSI","NP_11k")]
+
+AI_predictors <- AI_predictors[complete.cases(AI_predictors),] ### Remove rows with NA
+
+#Multicollinearity of variables 
+is.correlated <- function(i, j, data, conf.level = .95, cutoff = .5, ...) {
+  if(j >= i) return(NA)
+  ct <- cor.test(data[, i], data[, j], conf.level = conf.level, ...)
+  ct$p.value > (1 - conf.level) || abs(ct$estimate) <= cutoff
+}
+
+# Need vectorized function to use with 'outer'
+vCorrelated <- Vectorize(is.correlated, c("i", "j"))
+
+# Create logical matrix - AI 
+AI_matrix <- outer(1:7, 1:7, vCorrelated, data = AI_predictors)
+nm <- colnames(AI_predictors[1:7])
+dimnames(AI_matrix) <- list(nm, nm)
+
+AI_matrix # Print matrix
+
+# Rename rows and columns of matrix for consistency
+colnames(AI_matrix)[]<- c("scale(ACI_11k)", "scale(ADI)", "scale(AEI)", "scale(BI_11k)",
+                      "scale(H)","scale(NDSI)", "scale(NP_11k)")
+rownames(AI_matrix)[]<- c("scale(ACI_11k)","scale(ADI)", "scale(AEI)", "scale(BI_11k)",
+                     "scale(H)","scale(NDSI)","scale(NP_11k)" )
+
+```
+
+
+## GLMM and dredging
+
+The following chunk of code runs the Generalized linear Mixed-effects model using the acoustic indices as predictor variables and the avian species richness as the outcome variable. It then uses the dredge() function models by rank.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+##### model with rescaled variables (0-1) - Species richness
+
+Data <- data[complete.cases(Data),] ### Remove rows with NA
+
+options(na.action = "na.fail")
+
+fm <- glmer(species_richness ~ 
+                      scale(ACI_11k) +
+                      scale(ADI) +
+                      scale(AEI) +
+                      scale(BI_11k) + 
+                      scale(H) + 
+                      scale(NDSI) +
+                      scale(NP_11k)+
+                      Understory_density +
+                      (1|Site_Name) +
+                      (1|Date_Recorded) +
+                      (1|Time_Recorded),
+                    data = Data, 
+                    family = "poisson")#,
+                    #control = glmerControl(optimizer="bobyqa",
+                                           #optCtrl=list(maxfun=2e5)))
+
+isSingular(fm)
+
+summary(fm)
+
+check_collinearity(fm)
+
+# Fit a null model with RE (use a non-exported function .nullFitRE or specify it by hand:
+#nullmodel2 <- MuMIn:::.nullFitRE(fm2)
+# the above step is not necessary, but avoids repeated re-fitting of the null model.
+
+dd <- dredge(fm, subset = AI_matrix,
+              extra = c("R^2", F = function(x){
+  summary(x)$fstatistic[[1]]
+}))
+
+
+# write results into a CSV
+write.csv(as.data.frame(dd),"E:/Acoustic_Indices/Revisions_CSP/GLMM_10sec_11kHz_only//DredgeResults_species_richness_scaled_Time_10sec_with_UnderstoryDensity.csv", row.names = FALSE)
+
+```
+
+
+## Rerunning GLMM for the top model based on the dredge results
+
+The following chunk of code re-runs the Generalized linear Mixed-effects model using the variables from the top model of the dredged models and produces an SJ Plot for visualization. 
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+##### model with rescaled variables (0-1) - Species richness
+
+Data <- data[complete.cases(Data),] ### Remove rows with NA
+
+options(na.action = "na.fail")
+
+fm <- glmer(species_richness ~ 
+                      scale(ACI_11k) +
+                      #scale(ADI) +
+                      #scale(AEI) +
+                      scale(BI_11k) + 
+                      scale(H) + 
+                      scale(NDSI) +
+                      #scale(NP_11k)+
+                      #Understory_density +
+                      (1|Site_Name) +
+                      (1|Date_Recorded) +
+                      (1|Time_Recorded),
+                    data = Data, 
+                    family = "poisson")#,
+                    #control = glmerControl(optimizer="bobyqa",
+                                           #optCtrl=list(maxfun=2e5)))
+
+isSingular(fm)
+
+summary(fm)
+
+check_collinearity(fm)
+
+
+# Coefficient plot for GLMM summary - Species richness
+
+fig <- plot_models(fm, dot.size = 6, legend.title = "",
+                   show.values = TRUE, digits = 2,
+                   show.intercept = FALSE,
+                   transform = NULL,
+                   line.size = 1.4,
+                   vline.color = "grey"#,
+                   #axis.labels = c(#"No understory","Low understory density",
+                    #               "NDSI", "H", "BI_24k","BI_11k", "AEI",#"ADI", 
+                     #             "ACI_24k" #"ACI_11k"
+                      #            )
+                   )+ 
+  theme_bw()+
+  ylim(-0.5,0.5)+
+  theme(axis.text.x = element_text(size = 18), axis.title.x = element_text(size = 20),
+        axis.text.y = element_text(size = 18), axis.title.y = element_text(size = 20),
+        #legend.text = element_text(size = 16),
+        legend.position = "none"
+        ) +
+  ylab("Estimates")+
+  scale_x_discrete(labels = c("NDSI","H","BI","ACI"))
+
+fig
+
+
+```

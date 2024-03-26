@@ -1,0 +1,146 @@
+---
+title: "01-Computation-of-acoustic-indices"
+author: "Mayuri Kotian"
+date: "2023-03-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Computation of acoustic indices using soundecology package 
+
+This is an R Markdown document. The following chunk of code computes values for eight acoustic indices and stores the result files as .CSV into the working directory. The code below uses functions from the soundecology package (Version 1.01) by Villanueva-Rivera (2013).
+
+
+``` {r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+# Loading required packages
+library(seewave)
+library(soundecology)
+
+# set working directory
+setwd("F:/Winter2021-acoustic-data/Unrestored_Sites/Urdali_Mal/URM_1_SD19")
+
+getwd()
+
+## ACI (0-24kHz)
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_ACI_24k.csv", 
+                soundindex = "acoustic_complexity")
+
+## ACI_11k (2-11kHz)
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_ACI_11k.csv", 
+                soundindex = "acoustic_complexity", min_freq=2000, max_freq=11000)
+
+## ADI
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_ADI.csv", 
+                soundindex = "acoustic_diversity")
+
+## AEI
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_AEI.csv", 
+                soundindex = "acoustic_evenness")
+
+## BI (0-24kHz)
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_BI_24k.csv", 
+                soundindex = "bioacoustic_index")
+
+## BI (2-11kHz)
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_BI_11k.csv", 
+                soundindex = "bioacoustic_index", min_freq=2000, max_freq=11000)
+
+## H
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_H.csv",
+                soundindex = "H")
+
+## NDSI
+multiple_sounds(directory = getwd(), 
+                resultfile = "F:/Analysis Backup/AnalysisFiles_Winter2021/URM_1_SD19//AI_NDSI.csv", 
+                soundindex = "ndsi")
+
+```
+
+## Computation of number of peaks
+
+The foolowing code computes the index 'number of peaks' or NP and saves the resuts as a .CSV in the working directory.
+
+```{r setup, include=FALSE, message = FALSE, warning= FALSE}
+
+## Loading required libraries
+library(tuneR)
+library(seewave)
+library (dplyr)
+library(tidyverse)
+library(soundecology)
+
+## setting working directory
+setwd("F:/Random_selection_for_annotation/Winter_2021/Unrestored/Urdali_Mal")
+
+getwd()
+
+## Reading wavefiles and computing peak frequency values
+
+file_list=list.files(path = getwd(), pattern = ".WAV")
+file_list
+Dataset = data.frame()
+
+## For loop for computing peak frequencies data set
+
+for (i in 1:length(file_list)){
+  temp_data <- readWave(file_list[i])
+  ms = meanspec(temp_data, norm = FALSE)
+  Peaks= fpeaks(ms, freq=0, threshold=0.003, plot=TRUE)
+  Peaks=as.data.frame(as.table(Peaks)) ##Converting matrix to Data frame
+  Peaks['File_Index']=i ##Adding File index
+  x=sub('.*(\\d{6}).*', '\\1', file_list[i]) ## Extracting time from filename
+  Peaks['Time_Recorded']=x ##Storing time as a column in new data frame
+  z=sub('.*(\\d{8}).*', '\\1', file_list[i]) ## Extracting date from filename
+  Peaks['Date_Recorded']=z ##Storing date as a column in new data frame
+  y=sub('*', '\\1', file_list[i]) ##Extracting filename and storing it
+  Peaks['Filename']=y
+  Dataset = bind_rows(Dataset, Peaks)
+}
+Dataset
+
+##Extracting Amplitude, Time and Frequency in a  readable format
+
+AmpData <- Dataset %>% filter(Var2 == "amp")
+AmpData
+
+Amplitude <- AmpData %>% select(Freq)
+Amplitude<- Amplitude %>% rename(Amp = Freq)
+Amplitude
+
+FreqData <- Dataset %>% filter(Var2 == "freq")
+FreqData = cbind(FreqData, Amplitude)
+
+Peaks <- FreqData %>% select(File_Index, Filename, Time_Recorded, Date_Recorded, Freq, Amp)
+Peaks
+
+## Adding additional details about the wave files
+Peaks$Site_Name<-"Urdali_Mal"
+Peaks$Site_Type<-"Unrestored"
+Peaks$Year<-"2021"
+
+## Calculating the number of peaks 
+PeaksCount <- Peaks
+
+PeaksCount$PFCount_new <- 1 ## Adding count var to count each peak
+
+Count<- PeaksCount %>% group_by(Filename) %>% mutate(PFCount_new = sum(PFCount_new)) # Summing no. of peaks present for each file
+Count = subset(Count, select = -c(Freq,Amp)) # Removing redundant rows
+Count<-Count[!duplicated(Count), ]
+
+setwd("F:/Acoustic_Indices")
+write.csv(Count,"PeaksCount_AnnotatedData-FINAL.csv", row.names = FALSE)
+
+
+```
+
