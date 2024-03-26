@@ -20,10 +20,10 @@ This is an R Markdown document. The following chunk of code produces the correla
 library(ggpubr)
 
 # Set working directory
-setwd("E:/Acoustic_Indices/V2")
+setwd("E:/Acoustic_Indices/Revisions_CSP/Code-and-data-for-GitHub")
 
-# Read data 
-Data <- read.csv("AI-SR-HA-PFCount_0-24kHz_2-11kHz_0-10kHz_1-8kHz.csv", header = TRUE) # Read dataset
+# Read data
+Data <- read.csv("AI_SR.csv", header = TRUE)
 
 #Check factor variables 
 Data$Year<-as.factor(Data$Year) 
