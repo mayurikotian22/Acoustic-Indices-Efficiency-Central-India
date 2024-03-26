@@ -31,6 +31,8 @@ Data$Year<-as.factor(Data$Year)
 # Scatterplots showing correlation between indices and species richness
 # using Pearson correlation and linear regression
 
+corrdata <- Data[complete.cases(Data),]
+
 # 1. ACI (2-11 kHz) - Species richness 
 ggscatter(corrdata, x = "ACI_11k", y = "species_richness",
                 add = "reg.line",               # Add regression line
